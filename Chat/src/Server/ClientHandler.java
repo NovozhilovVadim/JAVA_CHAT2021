@@ -35,19 +35,19 @@ public class ClientHandler {
                             String[] tokens = str.split(" ");//создаём архив из строк
                             String nick = AuthServise.getNicknameByLoginAndPass(tokens[1], tokens[2]);//обравляем запрос к бд и присваиваем ответ переменной
                             if (nick != null){//если ник имеет значение
-                                if (server.verificationNickname(nick)){//Проверка а
+//                                if (server.verificationNickname(nick)){//Проверка а
 //                                    sendMsg("/auth-ok");//отправляем подтверждение авторизации
 //                                    setNickname(nick);//присваиваем экземпляру клиента полученный ник
 //                                    server.subscribe(ClientHandler.this);//додовляем клиента в вектор на сервере
 //                                    System.out.printf("Client [%s] connected \n", getNickname());//сообщаем в консоль сервера о подключении
 //                                    System.out.printf("");
 //                                    break;//если проверка пройдена выходим из цикла
-                                    if (!server.isNickBusy(nick)) {
+                                if (!server.isNickBusy(nick)) {
                                         sendMsg("/auth-OK");
                                         setNickname(nick);
                                         server.subscribe(ClientHandler.this);
                                         break;
-                                    }
+//                                    }
 
                                 }else {
                                     sendMsg("user is already logged in");//сообщаем об ошибке
