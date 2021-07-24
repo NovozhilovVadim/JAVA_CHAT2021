@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class RegistrationStage extends Stage {
+public class RegistrationStage extends Stage {//окно регистрации
     DataOutputStream out;
 
     public RegistrationStage(DataOutputStream out) {

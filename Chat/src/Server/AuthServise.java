@@ -44,30 +44,66 @@ public class AuthServise {//Сервис авторизации пользова
         }
     }
 
-    public static String getNicknameByLoginAndPassword(String login, String password){//Запрос к БД по логину и паролю получить ник
-        String query = String.format("select nickname, password from users where login='%s' and password='%s'", login);//отправляем запрос
+//    public static String getNicknameByLoginAndPassword(String login, String password){//Запрос к БД по логину и паролю получить ник
+//        String query = String.format("select nickname, password from users where login='%s' and password='%s'", login);//отправляем запрос
+//        try {
+//            ResultSet rs = statement.executeQuery(query);//получаем результат
+//            int myHash = password.hashCode();
+//            if (rs.next()){//если результат есть
+//                String nick = rs.getNString(1);
+//                //Изменяем тип PASSWORD на integer в БД
+//                int dbHash = rs.getInt(2);
+//                if (myHash == dbHash){
+//                    return nick;
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return null;//в противном случае NULL
+//    }
+
+
+    public static int addUser(String login, String pass, String nickname) {
         try {
-            ResultSet rs = statement.executeQuery(query);//получаем результат
-            int myHash = password.hashCode();
-            if (rs.next()){//если результат есть
-                String nick = rs.getNString(1);
-                //Изменяем тип PASSWORD на integer в БД
+            String query = "INSERT INTO users (login, password, nickname) VALUES (?, ?, ?);";
+            PreparedStatement ps = connection.prepareStatement(query);
+            ps.setString(1, login);
+            ps.setInt(2, pass.hashCode());
+            ps.setString(3, nickname);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+
+    public static String getNicknameByLoginAndPass(String login, String pass) {
+        String query = String.format("select nickname, password from users where login='%s'", login);
+        try {
+            ResultSet rs = statement.executeQuery(query); // возвращает выборку через select
+            int myHash = pass.hashCode();
+            // кеш числа 12345
+            // изменим пароли в ДБ на хеш от строки pass1
+            if (rs.next()) {
+                String nick = rs.getString(1);
                 int dbHash = rs.getInt(2);
-                if (myHash == dbHash){
+                if (myHash == dbHash) {
                     return nick;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;//в противном случае NULL
+        return null;
     }
 
     public static void disconnect() {//метод для отключения
         try {
             connection.close();//закрываем сессию
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch  (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

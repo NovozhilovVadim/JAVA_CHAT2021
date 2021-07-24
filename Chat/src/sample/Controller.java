@@ -2,6 +2,7 @@ package sample;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
+
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
@@ -11,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.WindowEvent;
 
 import java.awt.*;
+
 import java.awt.event.MouseEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.scene.control.Label;
 
 public class Controller implements Initializable {
     @FXML //Аннотация, помечающая класс или член как доступный для разметки.
@@ -192,7 +195,7 @@ public class Controller implements Initializable {
         }
     }
 
-    public void selectClient(MouseEvent mouseEvent){
+    public void selectClient(javafx.scene.input.MouseEvent mouseEvent){
         if (mouseEvent.getClickCount() == 2) {
             MiniStage ms = new MiniStage(clientList.getSelectionModel().getSelectedItem(), out, textAreas);
             ms.show();
@@ -224,6 +227,9 @@ public class Controller implements Initializable {
         RegistrationStage rs = new RegistrationStage(out);
         rs.show();
     }
+
+
+
 }
 
 

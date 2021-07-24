@@ -10,10 +10,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-public class MiniStage extends Stage {
-    String nickTo;
-    DataOutputStream out;
-    List<TextArea> parentList;
+public class MiniStage extends Stage {//создаём всплывающее окно
+    String nickTo;//имя адресата
+    DataOutputStream out;//исходящий поток
+    List<TextArea> parentList;//список отправки
 
     public MiniStage(String nickTo, DataOutputStream out, List<TextArea> parentList) {
         this.nickTo = nickTo;

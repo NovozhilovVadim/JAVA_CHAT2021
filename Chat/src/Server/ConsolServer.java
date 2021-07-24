@@ -54,14 +54,14 @@ public class ConsolServer {
         broadcastClientsList();
     }
 
-    public boolean verificationNickname(String name){//проверка авторизован клиент или нет
-        for (ClientHandler c : users//проходим по всему списку подключённых пользователей
-        ) {
-            if (name.equals(c.getNickname())){//сравниваем имя нового клиета с уже подключёнными
-                return false;
-            }
-        }return true;
-    }
+//    public boolean verificationNickname(String name){//проверка авторизован клиент или нет
+//        for (ClientHandler c : users//проходим по всему списку подключённых пользователей
+//        ) {
+//            if (name.equals(c.getNickname())){//сравниваем имя нового клиета с уже подключёнными
+//                return false;
+//            }
+//        }return true;
+//    }
 
 
     public void broadcastMessage(ClientHandler from, String str){//создаём метод рассылки всем клиентам
@@ -73,7 +73,16 @@ public class ConsolServer {
         }
     }
 
-    public void setPrivateMsg(ClientHandler nickFrom, String nickTo, String msg) {
+    public boolean isNickBusy(String nick) {
+        for (ClientHandler c : users) {
+            if (c.getNickname().equals(nick)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void sendPrivateMsg(ClientHandler nickFrom, String nickTo, String msg) {
         for (ClientHandler c:users//пробегаем по вектору
              ) {
             if (c.getNickname().equals(nickTo)){//ищем пользователя в списке
@@ -96,4 +105,6 @@ public class ConsolServer {
             c.sendMsg(out);
         }
     }
+
+
 }

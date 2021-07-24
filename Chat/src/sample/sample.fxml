@@ -1,66 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import java.net.*?>
-<?import javafx.geometry.*?>
+<?import java.net.URL?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.effect.*?>
 <?import javafx.scene.layout.*?>
-<?scenbulder-stylesheet /styles/style.css?>
+<?scenebuilder-stylesheet /styles/style.css?>
 
-<VBox fx:id="vBox1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
-   <!--Компонент JavaFX VBox - это компонент макета, который размещает все свои дочерние узлы (компоненты) в вертикальном столбце - друг над другом.
-   Компонент JavaFX VBox представлен классом javafx.scene.layout.VBox. В этом руководстве по JavaFX VBox я более подробно рассмотрю различные параметры,
-   которые компонент VBox имеет для компоновки элементов управления.-->
-   <stylesheets><URL value="@/styles/style.css" /> </stylesheets><!--Подключаем таблицу стилей-->
 
+<?import javafx.geometry.Insets?>
+<VBox alignment="center" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8"
+      fx:controller="sample.Controller">
+   <stylesheets>
+      <URL value="@/styles/style.css" />
+   </stylesheets>
    <children>
-
-      <HBox fx:id="upperPanel" >
-         <TextField HBox.hgrow="ALWAYS" promptText="Login" fx:id="loginField" />
-         <PasswordField promptText="Password" fx:id="passwordField" onAction="#tryToAuth"/>
-         <Button text="Sing in" onAction="#tryToAuth"/>
+      <HBox fx:id="upperPanel">
+         <children>
+            <TextField fx:id="loginField" promptText="Login" HBox.hgrow="ALWAYS" styleClass="field"/>
+            <PasswordField fx:id="passwordField" onAction="#tryToAuth" promptText="Password" styleClass="field">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin></PasswordField>
+            <Button onAction="#tryToAuth" styleClass="btn" text="Log in">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin></Button>
+            <Button mnemonicParsing="false" onAction="#logUp" styleClass="btn" text="Log up">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
       </HBox>
-
       <HBox VBox.vgrow="ALWAYS">
-         <VBox HBox.hgrow="ALWAYS">
-            <!--Создаём дочерние объекты-->
-            <TextArea fx:id="chatArea" editable="false" focusTraversable="false" prefHeight="323.0" prefWidth="600.0" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" />
-            <!--TextArea является компонентом, который позволяет пользователям вводить текст на многих строках, и читаются приложением.-->
-            <HBox prefHeight="29.0" prefWidth="600.0" fx:id="bottomPanel" managed="false" visible="false" VBox.vgrow="ALWAYS">
-               <!-- HBox размещает свои дочерние элементы в одну горизонтальную строку.
-                Если для HBox установлены границы и\или отступы, то содержимое будет размещено внутри этих вставок.-->
+         <children>
+            <VBox HBox.hgrow="ALWAYS">
                <children>
-                  <!--Создаём дочерние объекты-->
-                  <TextField fx:id="textField" onAction="#sendMsg" prefHeight="20.0" prefWidth="506.0" HBox.hgrow="ALWAYS">
-                     <!--Элемент управления JavaFX TextField позволяет пользователям приложения JavaFX вводить текст, который затем может быть прочитан приложением.
-                      Элемент управления JavaFX TextField представлен классом javafx.scene.control.TextField. -->
-                     <HBox.margin>
-                        <!--Устанавливаем горизонтальный контейнер с полями-->
-                        <Insets bottom="10.0" left="10.0" right="5.0" top="10.0" />
-                        <!--Непосредственно задаём поля-->
-                     </HBox.margin>
-                     <effect>
-                        <DropShadow />
-                        <!--Добавляем тени позади объекта-->
-                     </effect>
-                  </TextField>
-
-                  <Button fx:id="sendButton" alignment="CENTER" focusTraversable="false" mnemonicParsing="false" onAction="#sendMsg" prefHeight="22.0" prefWidth="93.0" text="SEND" textAlignment="CENTER">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="5.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                     <effect>
-                        <InnerShadow />
-                        <!--Добавляем тени внутри объекта-->
-                     </effect>
-                  </Button>
-
+                  <TextArea fx:id="chatArea" editable="false" minWidth="300.0" VBox.vgrow="ALWAYS" styleClass="field"/>
+                  <HBox fx:id="bottomPanel" managed="false" visible="false">
+                     <children>
+                        <TextField fx:id="textField" onAction="#sendMsg" promptText="Enter message..." HBox.hgrow="ALWAYS" styleClass="field"/>
+                        <Button onAction="#sendMsg" styleClass="btn" text="Send" />
+                     </children>
+                  </HBox>
                </children>
-               <VBox.margin>
-                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-               </VBox.margin>
-            </HBox>
-         </VBox>
-         <ListView fx:id="clientList" onMouseClicked="#selectClient" prefHeight="200"/>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+            </VBox>
+            <ListView fx:id="clientList" minWidth="100" onMouseClicked="#selectClient">
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding></ListView>
+            <Label fx:id="userName" styleClass="userLogin" text="userName" />
+         </children>
       </HBox>
    </children>
 </VBox>
