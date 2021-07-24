@@ -50,9 +50,11 @@ public class Controller implements Initializable {
     static final String ADDRESS = "localhost";
     static final int PORT = 6003;
 
+    List<TextArea> textAreas;//массив для textArea
+
     private boolean isAuthorized;//переменная отслеживающая состояние авторизации (ложно\истино)
 
-    List<TextArea> textAreas;//массив для textArea
+
 
     public void setAuthorized(boolean authorized) {//метод авторизации
         this.isAuthorized = authorized;//экземляр переменной клиента
@@ -82,7 +84,7 @@ public class Controller implements Initializable {
             textField.requestFocus();//Возвращаем фокус
         } else {
             try {
-                out.writeUTF(textField.getText());
+                out.writeUTF(textField.getText());//Отправляем в исходящий поток текст из TextField
                 textField.clear();//Очищаем поле TextField
                 textField.requestFocus();//Возвращаем фокус
             } catch (IOException e) {
@@ -97,6 +99,7 @@ public class Controller implements Initializable {
             socket = new Socket(ADDRESS, PORT);//определяем сокету адрес и порт
             in = new DataInputStream(socket.getInputStream());//передаём в обработчик входящий поток с сокета
             out = new DataOutputStream(socket.getOutputStream());//передаём в обработчик исходящий поток с сокета
+            setAuthorized(false); // Устанавливаем false для авторизации
             new Thread(() -> {//Запускаем поток
                 try {
                     while (true) {// Запускам бесконечный цикл
@@ -157,33 +160,6 @@ public class Controller implements Initializable {
         }
     }
 
-    public void disconnect(){//метод дисконекта
-        if (socket != null) {//если сокет существует
-            if (!socket.isClosed()) {//если сокет ещё не закрыт
-                try {
-                    out.writeUTF("/end");//отправляем команду закончить
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        socket.close();//закрываем сокет
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {//И влюбом случае завершаем выполнение
-                        System.exit(0);
-                    }
-                }
-            }
-        }
-    }
-
-    public void selectClient(MouseEvent mouseEvent){
-        if (mouseEvent.getClickCount() == 2) {
-            MiniStage ms = new MiniStage(clientList.getSelectionModel().getSelectedItem(), out, textAreas);
-            ms.show();
-        }
-    }
-
     public void tryToAuth(ActionEvent actionEvent) {//попытка авторизации
         if (socket == null || socket.isClosed()) {//проверяем, что мы не подключены к серверу(сокет не существует или закрыт
             connect();//вызываем метод подключения
@@ -197,26 +173,45 @@ public class Controller implements Initializable {
         }
     }
 
+    public void disconnect(){//метод дисконекта
+        if (socket != null) {//если сокет существует
+            if (!socket.isClosed()) {//если сокет ещё не закрыт
+                try {
+                    out.writeUTF("/end");//отправляем команду закончить
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    socket.close();//закрываем сокет
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {//И влюбом случае завершаем выполнение
+                        System.exit(0);
+                }
+            }
+        }
+    }
+
+    public void selectClient(MouseEvent mouseEvent){
+        if (mouseEvent.getClickCount() == 2) {
+            MiniStage ms = new MiniStage(clientList.getSelectionModel().getSelectedItem(), out, textAreas);
+            ms.show();
+        }
+    }
+
+
+
     private javafx.event.EventHandler<WindowEvent> closeEventHandler = new javafx.event.EventHandler<WindowEvent>() {//создаём слушателя события
         @Override//переопределяем действие
         public void handle(WindowEvent event) {
             disconnect();
-//            try {//моё решение
-//                out.writeUTF("/end");//если авторизованы - даём команду окончания сеанса
-//            } catch (IOException e) {
-//                System.out.println("EXIT");
-//            }finally {
-//                System.exit(0);//если не авторизованы то просто выходим из приложения
-//            }
         }
     };
     public javafx.event.EventHandler<WindowEvent> getCloseEventHandler() {//гетер для слушателя
         return closeEventHandler;
     }
 
-//    public void setUserName(String userName) {//Сеттер для юзернэйма
-//        this.userName = userName;
-//    }
+
 
     @Override//переопределяем интерфейс
     public void initialize(URL location, ResourceBundle resources) {

@@ -14,7 +14,7 @@ public class Main extends Application {//Наследуемся от Application
         loader.setLocation(getClass().getResource("sample.fxml"));//передаём загрузчику адрес файла
         Parent root = loader.load();//создаём экземпляр родительского класса для управления и передаём в него метод загрузчика определяющий иерархию
         primaryStage.setTitle("Chat");//Передаём название окна
-        primaryStage.setScene(new Scene(root, 400, 300));
+
         primaryStage.setScene(new Scene(root, 640, 480));//Устанавливаем исходные размеры окна
         primaryStage.show();//делаем окно видимым
         Controller controller = loader.getController();//создаём экземпляр контроллера и возвращаем ему контроллер связанный с корневым элементом
@@ -23,7 +23,7 @@ public class Main extends Application {//Наследуемся от Application
       }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
         //В этом методе вызывается статический метод Application.launch(args).
         // При запуске в метод launch мы можем передать аргументы в виде массива строк.
         // Например, мы можем взять те значения, которые получает метод main через командную строку/терминал.
