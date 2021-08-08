@@ -15,7 +15,7 @@ public class RegistrationStage extends Stage {//окно регистрации
         this.out = out;
         Parent root = null;
         try {
-            root = FXMLLoader.load(getClass().getResource("signup.fxml"));
+            root = FXMLLoader.load(getClass().getResource("singup.fxml"));
             setTitle("Sign Up");
             Scene scene = new Scene(root, 300, 200);
             setScene(scene);

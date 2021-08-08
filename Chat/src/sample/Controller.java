@@ -107,7 +107,7 @@ public class Controller implements Initializable {
                 try {
                     while (true) {// Запускам бесконечный цикл
                         String str = in.readUTF();//получаем строку из входящего потока в UTF
-                        if ("/auth-ok".equals(str)) {//ловим строку авторизации клиента
+                        if ("/auth-OK".equals(str)) {//ловим строку авторизации клиента
                             setAuthorized(true);//устанавливаем авторизацию истина
                             chatArea.clear();//очищаем поле чата
                             break;
