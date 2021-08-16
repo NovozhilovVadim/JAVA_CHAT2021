@@ -96,7 +96,7 @@ public class ConsolServer {
 
     private void broadcastClientsList() {
         StringBuilder sd = new StringBuilder();
-        sd.append(("/clietList "));
+        sd.append(("/clientList "));
         for (ClientHandler c : users ) {
             sd.append(c.getNickname() + " ");
         }

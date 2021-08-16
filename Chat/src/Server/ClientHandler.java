@@ -3,6 +3,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,6 +95,11 @@ public class ClientHandler {
                                     blacklist.add(tokens[1]);
                                     sendMsg("You added " + tokens[1] + " to blacklist");
                                 }
+                                //Смена ника
+                                if (str.startsWith("/changeNick")){
+                                    String[] tokens = str.split(" ", 2);
+                                    AuthServise.changeNick(this.getNickname(), tokens[1]);
+                                }
 //                                } else if (str.startsWith("@")) {
 //                                    String[] tokens = str.split(" ", 2);
 //                                    server.setPrivateMsg(this, tokens[0].substring(1, tokens[0].length()), tokens[1]);
@@ -109,12 +115,12 @@ public class ClientHandler {
                                 // - это конкретный класс для форматирования и анализа дат с учетом локали.
                                 // Он позволяет выполнять форматирование (дата → текст), синтаксический анализ (текст → дата) и нормализацию.
                                 // SimpleDateFormat позволяет начать с выбора любых пользовательских шаблонов для форматирования даты и времени.
-                                server.broadcastMessage(this, nickname + "; " + str);
+                                server.broadcastMessage(this, nickname + ": " + str);
                             }
                             System.out.printf("Client [%s]  %s\n", nickname, str);
                         }
                     }
-                }catch (IOException e){
+                }catch (IOException | SQLException e){
                     e.printStackTrace();
                 }finally {
                     try {

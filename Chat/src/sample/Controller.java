@@ -9,6 +9,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 
 import java.awt.*;
@@ -44,6 +45,9 @@ public class Controller implements Initializable {
     ListView<String> clientList;
     @FXML
     private Label userName;
+    @FXML
+    VBox changeN;
+
 
     Socket socket;//Создаём сокет для подключения
     DataInputStream in;//Создаём обработчик входящего потока
@@ -68,6 +72,9 @@ public class Controller implements Initializable {
             bottomPanel.setManaged(false);//панель ввода не активна
             clientList.setVisible(false);//панель пользователей скрыта
             clientList.setManaged(false);//панель пользователей не активна
+            changeN.setVisible(false);
+            changeN.setManaged(false);
+
 
         } else {
             upperPanel.setVisible(false);//панель авторизации не видна
@@ -76,6 +83,9 @@ public class Controller implements Initializable {
             bottomPanel.setManaged(true);//панель ввода  активна
             clientList.setVisible(true);//панель пользователей не скрыта
             clientList.setManaged(true);//панель пользователей  активна
+            changeN.setVisible(true);
+            changeN.setManaged(true);
+
         }
     }
 
@@ -96,9 +106,14 @@ public class Controller implements Initializable {
         }
     }
 
+    public void  chngNick(){
+        ChangeNick ch = new ChangeNick(out);
+        ch.show();
+    }
+
     public void connect() {//метод подключения
         try {
-            userName.setText("test");
+            userName.setText("Users");
             socket = new Socket(ADDRESS, PORT);//определяем сокету адрес и порт
             in = new DataInputStream(socket.getInputStream());//передаём в обработчик входящий поток с сокета
             out = new DataOutputStream(socket.getOutputStream());//передаём в обработчик исходящий поток с сокета

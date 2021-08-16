@@ -77,6 +77,19 @@ public class AuthServise {//Сервис авторизации пользова
         }
         return 0;
     }
+    public static int changeNick(String oldNick, String newNick) throws SQLException {
+       try {
+           String query = "UPDATE users SET nickname = ?  WHERE nickname = ? ";
+           PreparedStatement ps = connection.prepareStatement(query);
+           ps.setString(1, newNick);
+           ps.setString(2, oldNick);
+           return ps.executeUpdate();
+       }catch (SQLException e){
+           e.printStackTrace();
+       }
+       return 0;
+    }
+
 
 
     public static String getNicknameByLoginAndPass(String login, String pass) {

@@ -56,4 +56,6 @@ public class RegistrationController {//контроллер окна регис�
         Stage stage = (Stage) login.getScene().getWindow();
         stage.close();
     }
+
+
 }
