@@ -98,6 +98,7 @@ public class ClientHandler {
                                 //Смена ника
                                 if (str.startsWith("/changeNick")){
                                     String[] tokens = str.split(" ", 2);
+
                                     AuthServise.changeNick(this.getNickname(), tokens[1]);
                                 }
 //                                } else if (str.startsWith("@")) {

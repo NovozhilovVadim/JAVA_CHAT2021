@@ -15,11 +15,11 @@ import javafx.stage.WindowEvent;
 import java.awt.*;
 
 import java.awt.event.MouseEvent;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,10 +56,9 @@ public class Controller implements Initializable {
 //    public static final int PORT = 6003; //Перемення с портом для подключения
     static final String ADDRESS = "localhost";
     static final int PORT = 6003;
-
     List<TextArea> textAreas;//массив для textArea
-
     private boolean isAuthorized;//переменная отслеживающая состояние авторизации (ложно\истино)
+    private String login = null;
 
 
 
@@ -76,6 +75,7 @@ public class Controller implements Initializable {
             changeN.setManaged(false);
 
 
+
         } else {
             upperPanel.setVisible(false);//панель авторизации не видна
             upperPanel.setManaged(false);//панель авторизации не активна
@@ -85,6 +85,8 @@ public class Controller implements Initializable {
             clientList.setManaged(true);//панель пользователей  активна
             changeN.setVisible(true);
             changeN.setManaged(true);
+
+
 
         }
     }
@@ -106,10 +108,6 @@ public class Controller implements Initializable {
         }
     }
 
-    public void  chngNick(){
-        ChangeNick ch = new ChangeNick(out);
-        ch.show();
-    }
 
     public void connect() {//метод подключения
         try {
@@ -159,6 +157,17 @@ public class Controller implements Initializable {
                             });
                         }else {
                             chatArea.appendText(str + "\n");//печатаем эту строку в окно чата
+
+                            //Логируем локально чат
+                            String nameFile = "history_" + login;
+                            if (!Files.exists(Paths.get(nameFile))){
+                                File file = new File(nameFile + ".txt");
+                                try (PrintWriter writer = new PrintWriter(new FileWriter(nameFile))) {
+                                    writer.println(str);
+
+                                }
+                            }
+
                         }
                     }
                 } catch (IOException e) {//обрабатываем ошибку ввода
@@ -184,6 +193,7 @@ public class Controller implements Initializable {
         }
         try {
             out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());//передаём в поток комманду авторизации, логин и пароль
+            String login = loginField.getText();
             loginField.clear();//очищаем поле логина
             passwordField.clear();//очищаем поле пароля
         } catch (IOException e) {
@@ -204,6 +214,7 @@ public class Controller implements Initializable {
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {//И влюбом случае завершаем выполнение
+                    login = null;
                         System.exit(0);
                 }
             }
@@ -243,8 +254,13 @@ public class Controller implements Initializable {
         rs.show();
     }
 
+    public void  chngNick(ActionEvent actionEvent){
 
+    }
 
+    public String getLogin() {
+        return login;
+    }
 }
 
 
