@@ -2,7 +2,6 @@ package sample;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
-
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
@@ -11,18 +10,10 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
-
-import java.awt.*;
-
-import java.awt.event.MouseEvent;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.scene.control.Label;
@@ -48,7 +39,6 @@ public class Controller implements Initializable {
     @FXML
     VBox changeN;
 
-
     Socket socket;//Создаём сокет для подключения
     DataInputStream in;//Создаём обработчик входящего потока
     DataOutputStream out;//Создаём обработчик исходящего потока
@@ -58,11 +48,11 @@ public class Controller implements Initializable {
     static final int PORT = 6003;
     List<TextArea> textAreas;//массив для textArea
     private boolean isAuthorized;//переменная отслеживающая состояние авторизации (ложно\истино)
-    private String login = null;
+    private String login;
+    private String nameFile;
+    LogChat history = new LogChat();
 
-
-
-    public void setAuthorized(boolean authorized) {//метод авторизации
+    public void setAuthorized (boolean authorized) {//метод авторизации
         this.isAuthorized = authorized;//экземляр переменной клиента
         if (!authorized) {//если не авторизован
             upperPanel.setVisible(true);//панель авторизации видна
@@ -73,9 +63,6 @@ public class Controller implements Initializable {
             clientList.setManaged(false);//панель пользователей не активна
             changeN.setVisible(false);
             changeN.setManaged(false);
-
-
-
         } else {
             upperPanel.setVisible(false);//панель авторизации не видна
             upperPanel.setManaged(false);//панель авторизации не активна
@@ -85,9 +72,6 @@ public class Controller implements Initializable {
             clientList.setManaged(true);//панель пользователей  активна
             changeN.setVisible(true);
             changeN.setManaged(true);
-
-
-
         }
     }
 
@@ -108,7 +92,6 @@ public class Controller implements Initializable {
         }
     }
 
-
     public void connect() {//метод подключения
         try {
             userName.setText("Users");
@@ -122,14 +105,21 @@ public class Controller implements Initializable {
                         String str = in.readUTF();//получаем строку из входящего потока в UTF
                         if ("/auth-OK".equals(str)) {//ловим строку авторизации клиента
                             setAuthorized(true);//устанавливаем авторизацию истина
+                            nameFile = "history_" + this.login + ".txt";
+                            history.CreateLog(this.nameFile);
                             chatArea.clear();//очищаем поле чата
+//                            chatArea.appendText(history.LogPrint(this.nameFile));
+                            for (Object string : history.LogPrint(this.nameFile)
+                                 ) {
+                                String log = (String) string;
+                                System.out.println(log);
+                                chatArea.appendText(log + "\n");
+
+                            }
+//                            chatArea.appendText(history.LogPrint(this.nameFile));;
+
                             break;
                         } else {//если не авторизован, то принимаем сообщение об ошибке и выводим его в окно чата
-//                            Date date = new Date();//Выделяет объект Date и инициализирует его, чтобы он представлял время, в которое он был выделен.
-//                            SimpleDateFormat timeObj = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");//SimpleDateFormat
-                            // - это конкретный класс для форматирования и анализа дат с учетом локали.
-                            // Он позволяет выполнять форматирование (дата → текст), синтаксический анализ (текст → дата) и нормализацию.
-                            // SimpleDateFormat позволяет начать с выбора любых пользовательских шаблонов для форматирования даты и времени.
                             for (TextArea ta : textAreas) {//проходим циклом по textArea
                                 ta.appendText(str + "\n");
                                 //печатаем сообщение об ошибке строку в окно чата
@@ -138,36 +128,31 @@ public class Controller implements Initializable {
                     }
 
                     while (true) {// Запускам бесконечный цикл
-                        String str = in.readUTF();//получаем строку из входящего потока в UTF
-                        if ("/serverClosed".equals(str)) {//ловим команду закрытия сервера
-                            System.exit(0);//выходим из экземпляра клиента + закрываем окно
-                            break;//если сервер закрыт, то выходим из цикла
-                        }
-
-                        if (str.startsWith("/clientList ")){ //Ловим команду клиент лист
-                            String[] tokens = str.split(" ");//делим строку на токены и добавляем в стринговый массив
-                            Platform.runLater(new Runnable() { //запускаем в отдельном потоке и возвращаем управление
-                                @Override//переопределяем
-                                public void run() {
-                                    clientList.getItems().clear();//очищаем клиент лист
-                                    for (int i = 1; i < tokens.length; i++) {//проходимся циклом по токенам
-                                        clientList.getItems().add(tokens[i]);//добавляем пользователей в клиентлист
-                                    }
-                                }
-                            });
-                        }else {
-                            chatArea.appendText(str + "\n");//печатаем эту строку в окно чата
-
-                            //Логируем локально чат
-                            String nameFile = "history_" + login;
-                            if (!Files.exists(Paths.get(nameFile))){
-                                File file = new File(nameFile + ".txt");
-                                try (PrintWriter writer = new PrintWriter(new FileWriter(nameFile))) {
-                                    writer.println(str);
-
-                                }
+                        if (socket.isClosed()) {
+                            System.exit(1);
+                        } else {
+                            String str = in.readUTF();//получаем строку из входящего потока в UTF
+                            if ("/serverClosed".equals(str)) {//ловим команду закрытия сервера
+                                System.exit(0);//выходим из экземпляра клиента + закрываем окно
+                                break;//если сервер закрыт, то выходим из цикла
                             }
+                            if (str.startsWith("/clientList ")) { //Ловим команду клиент лист
+                                String[] tokens = str.split(" ");//делим строку на токены и добавляем в стринговый массив
+                                Platform.runLater(new Runnable() { //запускаем в отдельном потоке и возвращаем управление
+                                    @Override//переопределяем
+                                    public void run() {
+                                        clientList.getItems().clear();//очищаем клиент лист
+                                        for (int i = 1; i < tokens.length; i++) {//проходимся циклом по токенам
+                                            clientList.getItems().add(tokens[i]);//добавляем пользователей в клиентлист
+                                        }
+                                    }
+                                });
+                            } else {
+                                chatArea.appendText(str + "\n");//печатаем эту строку в окно чата
 
+                                //Логируем локально чат
+                                history.LogChat(str + "\r\n", this.nameFile);
+                            }
                         }
                     }
                 } catch (IOException e) {//обрабатываем ошибку ввода
@@ -193,7 +178,7 @@ public class Controller implements Initializable {
         }
         try {
             out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());//передаём в поток комманду авторизации, логин и пароль
-            String login = loginField.getText();
+            login = loginField.getText();
             loginField.clear();//очищаем поле логина
             passwordField.clear();//очищаем поле пароля
         } catch (IOException e) {
