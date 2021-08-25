@@ -4,6 +4,7 @@ import java.sql.*;
 public class AuthServise {//Сервис авторизации пользователей
     private static Connection connection;//создаём сессию (подключение) к базе данных
     private static Statement statement;//
+    private static PreparedStatement ps;
     //    Объект, используемый для выполнения статического оператора SQL и возврата полученных результатов.
     //    По умолчанию одновременно может быть открыт только один объект ResultSet для каждого объекта Statement.
     //    Следовательно, если чтение одного объекта ResultSet чередуется с чтением другого,
@@ -64,10 +65,12 @@ public class AuthServise {//Сервис авторизации пользова
 //    }
 
 
+
     public static int addUser(String login, String pass, String nickname) {
         try {
+
             String query = "INSERT INTO users (login, password, nickname) VALUES (?, ?, ?);";
-            PreparedStatement ps = connection.prepareStatement(query);
+//            PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, login);
             ps.setInt(2, pass.hashCode());
             ps.setString(3, nickname);
@@ -113,10 +116,12 @@ public class AuthServise {//Сервис авторизации пользова
     }
 
     public static void disconnect() {//метод для отключения
-        try {
-            connection.close();//закрываем сессию
-        } catch  (SQLException e) {
-            e.printStackTrace();
+        if (connection != null) {
+            try {
+                connection.close();//закрываем сессию
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
