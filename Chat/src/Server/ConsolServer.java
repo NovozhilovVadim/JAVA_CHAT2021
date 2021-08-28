@@ -4,9 +4,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ConsolServer {
     private Vector<ClientHandler> users;//объявляем переменную синхронизированой коллекции
+
 
 
     public ConsolServer() {
@@ -14,15 +17,23 @@ public class ConsolServer {
         users = new Vector<>();//Создаём экземпляр вектора
         Socket socket = null;//клиент
         ServerSocket server = null;//Наша сторона
+//        ExecutorService service = Executors.newFixedThreadPool(100);
         try { //пердполагаем возникновение ошибки
             AuthServise.connect(); //подключаемся к базе данных
             server = new ServerSocket(6003); //создаЁм сервер. Слушаем порт 6001
             System.out.println("Server started...");
+
             while (true) {//Запускаем бесконечный цикл отслеживания событий входящего потока
                 socket = server.accept();//Ждём подключения
                 System.out.printf("Client [%s] try to connected\n", socket.getInetAddress());//Сообщение о подключении клиента -
                 // getInetAddress() - возвращает адрес клиента
                 new ClientHandler(this, socket);//создаём нового клиента
+
+                //Показалось вполне логичным добавить такой вариант. Уместно ли это в данном случае?
+//                Socket finalSocket = socket;
+//                service.execute(() -> {
+//                        new ClientHandler(this, finalSocket);//создаём нового клиента
+//                });
             }
         }catch (IOException e){//Обрабатываем возникновение ошибки "Ошибка ввода - вывода"
             e.printStackTrace();
@@ -38,6 +49,7 @@ public class ConsolServer {
             }catch (IOException e){
                 e.printStackTrace();
             }
+//            service.shutdown();
             AuthServise.disconnect();//отключаемся от БД
         }
     }
