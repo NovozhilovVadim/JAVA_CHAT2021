@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private ConsolServer server;//экземпляр сервера
@@ -17,6 +20,8 @@ public class ClientHandler {
     private DataInputStream in;//экземпляр входящего потока
     private String nickname;
     private List<String> blacklist;// черный список у пользователя, а не у сервера
+    private ExecutorService executorService;
+
 
 
     public ClientHandler(ConsolServer server, Socket socket) {
@@ -26,12 +31,17 @@ public class ClientHandler {
             this.in = new DataInputStream(socket.getInputStream());//обработчик входящего
             this.out = new DataOutputStream(socket.getOutputStream());//обработчик исходящего потокаиз сокета
             this.blacklist = new ArrayList<>();
-            new Thread(()->{
+            this.executorService = Executors.newSingleThreadExecutor();
+            executorService.execute(()->{
                 boolean isExit = false;
                 try {
                     // auth - /auth login pass
                     while(true){//Авторизация
+                        if (Thread.currentThread().isInterrupted()){
+                            break;
+                        }
                         String str = in.readUTF();//Создаём строку из обработанного  в in
+
                         if (str.startsWith("/auth")){//Ловим команду авторизации
                             String[] tokens = str.split(" ");//создаём архив из строк
                             String nick = AuthServise.getNicknameByLoginAndPass(tokens[1], tokens[2]);//обравляем запрос к бд и присваиваем ответ переменной
@@ -139,9 +149,10 @@ public class ClientHandler {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    executorService.shutdownNow();
                     server.unsubscribe(this);//убираем клиента из вектора
                 }
-            }).start();
+            });
         }catch (IOException e){
             e.printStackTrace();
         }

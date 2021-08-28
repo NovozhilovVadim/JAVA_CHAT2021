@@ -50,7 +50,7 @@ public class Controller implements Initializable {
     private boolean isAuthorized;//переменная отслеживающая состояние авторизации (ложно\истино)
     private String login;
     private String nameFile;
-    LogChat history = new LogChat();
+    LogChat history = new LogChat(nameFile);
 
     public void setAuthorized (boolean authorized) {//метод авторизации
         this.isAuthorized = authorized;//экземляр переменной клиента
@@ -106,10 +106,11 @@ public class Controller implements Initializable {
                         if ("/auth-OK".equals(str)) {//ловим строку авторизации клиента
                             setAuthorized(true);//устанавливаем авторизацию истина
                             nameFile = "history_" + this.login + ".txt";
-                            history.CreateLog(this.nameFile);
+                            history.setName(this.nameFile);
+                            history.createLog();
                             chatArea.clear();//очищаем поле чата
 //                            chatArea.appendText(history.LogPrint(this.nameFile));
-                            for (Object string : history.LogPrint(this.nameFile)
+                            for (Object string : history.logPrint()
                                  ) {
                                 String log = (String) string;
                                 System.out.println(log);
@@ -151,7 +152,7 @@ public class Controller implements Initializable {
                                 chatArea.appendText(str + "\n");//печатаем эту строку в окно чата
 
                                 //Логируем локально чат
-                                history.LogChat(str + "\r\n", this.nameFile);
+                                history.logChat(str + "\r\n");
                             }
                         }
                     }
