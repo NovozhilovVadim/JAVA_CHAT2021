@@ -20,7 +20,7 @@ public class ClientHandler {
     private DataInputStream in;//экземпляр входящего потока
     private String nickname;
     private List<String> blacklist;// черный список у пользователя, а не у сервера
-    private ExecutorService executorService;
+//    private ExecutorService executorService;
 
 
 
@@ -31,21 +31,22 @@ public class ClientHandler {
             this.in = new DataInputStream(socket.getInputStream());//обработчик входящего
             this.out = new DataOutputStream(socket.getOutputStream());//обработчик исходящего потокаиз сокета
             this.blacklist = new ArrayList<>();
-            this.executorService = Executors.newSingleThreadExecutor();
-            executorService.execute(()->{
+//            this.executorService = Executors.newSingleThreadExecutor();
+            server.getService().execute(()->{
                 boolean isExit = false;
                 try {
                     // auth - /auth login pass
                     while(true){//Авторизация
-                        if (Thread.currentThread().isInterrupted()){
-                            break;
-                        }
+
                         String str = in.readUTF();//Создаём строку из обработанного  в in
 
                         if (str.startsWith("/auth")){//Ловим команду авторизации
                             String[] tokens = str.split(" ");//создаём архив из строк
-                            String nick = AuthServise.getNicknameByLoginAndPass(tokens[1], tokens[2]);//обравляем запрос к бд и присваиваем ответ переменной
-                            if (nick != null){//если ник имеет значение
+                            if (tokens.length > 3){
+                                if (tokens[1] !=null && tokens[2] != null) {
+                                    String nick = AuthServise.getNicknameByLoginAndPass(tokens[1], tokens[2]);//обравляем запрос к бд и присваиваем ответ переменной
+
+                                    if (nick != null) {//если ник имеет значение
 //                                if (server.verificationNickname(nick)){//Проверка а
 //                                    sendMsg("/auth-ok");//отправляем подтверждение авторизации
 //                                    setNickname(nick);//присваиваем экземпляру клиента полученный ник
@@ -53,19 +54,27 @@ public class ClientHandler {
 //                                    System.out.printf("Client [%s] connected \n", getNickname());//сообщаем в консоль сервера о подключении
 //                                    System.out.printf("");
 //                                    break;//если проверка пройдена выходим из цикла
-                                if (!server.isNickBusy(nick)) {
-                                        sendMsg("/auth-OK");
-                                        setNickname(nick);
-                                        server.subscribe(ClientHandler.this);
-                                        break;
+                                        if (!server.isNickBusy(nick)) {
+                                            sendMsg("/auth-OK");
+                                            setNickname(nick);
+                                            server.subscribe(ClientHandler.this);
+                                            break;
 //                                    }
 
+                                        } else {
+                                            sendMsg("user is already logged in");//сообщаем об ошибке
+                                        }
+
+                                    } else {
+                                        sendMsg("wrong login/password");//сообщаем об ошибке логина или пароля
+                                    }
                                 }else {
-                                    sendMsg("user is already logged in");//сообщаем об ошибке
+                                    sendMsg("Please, enter your Login and Password");
                                 }
                             }else {
-                                sendMsg("wrong login/password");//сообщаем об ошибке логина или пароля
+                                sendMsg("You don't enter your Login or Password");
                             }
+
                         }
                         // регистрация
                         if (str.startsWith("/signup ")) {
@@ -134,22 +143,32 @@ public class ClientHandler {
                 }catch (IOException | SQLException e){
                     e.printStackTrace();
                 }finally {
+
                     try {
+
                         in.close();//закрываем входящий поток
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     try {
-                        out.close();//закрываем исходящий поток
+
+                            out.close();//закрываем исходящий поток
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                     try {
-                        socket.close();//закрываем сокет
+                        if (!socket.isClosed()) {
+
+                            socket.close();//закрываем сокет
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    executorService.shutdownNow();
+
+
                     server.unsubscribe(this);//убираем клиента из вектора
                 }
             });
