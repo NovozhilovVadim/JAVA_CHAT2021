@@ -16,6 +16,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javafx.scene.control.Label;
 
 public class Controller implements Initializable {
@@ -50,6 +53,7 @@ public class Controller implements Initializable {
     private boolean isAuthorized;//переменная отслеживающая состояние авторизации (ложно\истино)
     private String login;
     private String nameFile;
+    private ExecutorService executorService;
     LogChat history = new LogChat(nameFile);
 
     public void setAuthorized (boolean authorized) {//метод авторизации
@@ -99,36 +103,42 @@ public class Controller implements Initializable {
             in = new DataInputStream(socket.getInputStream());//передаём в обработчик входящий поток с сокета
             out = new DataOutputStream(socket.getOutputStream());//передаём в обработчик исходящий поток с сокета
             setAuthorized(false); // Устанавливаем false для авторизации
-            new Thread(() -> {//Запускаем поток
+            this.executorService = Executors.newSingleThreadExecutor();
+            executorService.execute(() -> {//Запускаем поток
                 try {
                     while (true) {// Запускам бесконечный цикл
-                        String str = in.readUTF();//получаем строку из входящего потока в UTF
-                        if ("/auth-OK".equals(str)) {//ловим строку авторизации клиента
-                            setAuthorized(true);//устанавливаем авторизацию истина
-                            nameFile = "history_" + this.login + ".txt";
-                            history.setName(this.nameFile);
-                            history.createLog();
-                            chatArea.clear();//очищаем поле чата
-//                            chatArea.appendText(history.LogPrint(this.nameFile));
-                            for (Object string : history.logPrint()
-                                 ) {
-                                String log = (String) string;
-                                System.out.println(log);
-                                chatArea.appendText(log + "\n");
-
-                            }
-//                            chatArea.appendText(history.LogPrint(this.nameFile));;
-
+                        if (Thread.currentThread().isInterrupted()){
                             break;
-                        } else {//если не авторизован, то принимаем сообщение об ошибке и выводим его в окно чата
-                            for (TextArea ta : textAreas) {//проходим циклом по textArea
-                                ta.appendText(str + "\n");
-                                //печатаем сообщение об ошибке строку в окно чата
+                        }
+                        if (!socket.isClosed()){
+                            String str = in.readUTF();//получаем строку из входящего потока в UTF
+                            if ("/auth-OK".equals(str)) {//ловим строку авторизации клиента
+                                setAuthorized(true);//устанавливаем авторизацию истина
+                                nameFile = "history_" + this.login + ".txt";
+                                history.setName(this.nameFile);
+                                history.createLog();
+                                chatArea.clear();//очищаем поле чата
+
+                                for (Object string : history.logPrint()
+                                ) {
+                                    String log = (String) string;
+                                    System.out.println(log);
+                                    chatArea.appendText(log + "\n");
+                                }
+                                break;
+                            } else {//если не авторизован, то принимаем сообщение об ошибке и выводим его в окно чата
+                                for (TextArea ta : textAreas) {//проходим циклом по textArea
+                                    ta.appendText(str + "\n");
+                                    //печатаем сообщение об ошибке строку в окно чата
+                                }
                             }
                         }
                     }
 
                     while (true) {// Запускам бесконечный цикл
+                        if (Thread.currentThread().isInterrupted()){
+                            break;
+                        }
                         if (socket.isClosed()) {
                             System.exit(1);
                         } else {
@@ -157,18 +167,25 @@ public class Controller implements Initializable {
                         }
                     }
                 } catch (IOException e) {//обрабатываем ошибку ввода
+                    System.out.println("!!!!!!");
+                    System.exit(5);//Закрытие окна по крестику после неудачного ввода пароля вызывает ошибку SecketExeption: Socket closed
                     e.printStackTrace();
                 } finally {//Закрываем сокет (сетевое соединение)
                     try {
-                        socket.close();//закрываем сокет
+                        if (!socket.isClosed()) {
+                            socket.close();//закрываем сокет
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     setAuthorized(false);//сбрасываем статус авторизации
+                    executorService.shutdownNow();
                 }
-            }).start();//старт потока
+
+            });//старт потока
         } catch (IOException e) {
             e.printStackTrace();
+
             chatArea.appendText("Connection refused\n");//сообщаем об ошибке в чат
         }
     }
@@ -177,11 +194,17 @@ public class Controller implements Initializable {
         if (socket == null || socket.isClosed()) {//проверяем, что мы не подключены к серверу(сокет не существует или закрыт
             connect();//вызываем метод подключения
         }
+
         try {
-            out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());//передаём в поток комманду авторизации, логин и пароль
-            login = loginField.getText();
-            loginField.clear();//очищаем поле логина
-            passwordField.clear();//очищаем поле пароля
+            if(loginField.getText() != null  ) {
+                if (passwordField.getText() != null) {
+                    out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());//передаём в поток комманду авторизации, логин и пароль
+                    login = loginField.getText();
+                    loginField.clear();//очищаем поле логина
+                    passwordField.clear();//очищаем поле пароля
+
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -196,6 +219,8 @@ public class Controller implements Initializable {
                     e.printStackTrace();
                 }
                 try {
+                    in.close();
+                    out.close();
                     socket.close();//закрываем сокет
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -223,6 +248,7 @@ public class Controller implements Initializable {
         }
     };
     public javafx.event.EventHandler<WindowEvent> getCloseEventHandler() {//гетер для слушателя
+
         return closeEventHandler;
     }
 

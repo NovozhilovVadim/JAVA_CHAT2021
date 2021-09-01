@@ -9,31 +9,26 @@ import java.util.concurrent.Executors;
 
 public class ConsolServer {
     private Vector<ClientHandler> users;//объявляем переменную синхронизированой коллекции
+    private ExecutorService service;
 
 
 
     public ConsolServer() {
-
         users = new Vector<>();//Создаём экземпляр вектора
         Socket socket = null;//клиент
         ServerSocket server = null;//Наша сторона
-//        ExecutorService service = Executors.newFixedThreadPool(100);
+
         try { //пердполагаем возникновение ошибки
             AuthServise.connect(); //подключаемся к базе данных
             server = new ServerSocket(6003); //создаЁм сервер. Слушаем порт 6001
             System.out.println("Server started...");
+            service = Executors.newCachedThreadPool();
 
             while (true) {//Запускаем бесконечный цикл отслеживания событий входящего потока
                 socket = server.accept();//Ждём подключения
                 System.out.printf("Client [%s] try to connected\n", socket.getInetAddress());//Сообщение о подключении клиента -
                 // getInetAddress() - возвращает адрес клиента
                 new ClientHandler(this, socket);//создаём нового клиента
-
-                //Показалось вполне логичным добавить такой вариант. Уместно ли это в данном случае?
-//                Socket finalSocket = socket;
-//                service.execute(() -> {
-//                        new ClientHandler(this, finalSocket);//создаём нового клиента
-//                });
             }
         }catch (IOException e){//Обрабатываем возникновение ошибки "Ошибка ввода - вывода"
             e.printStackTrace();
@@ -49,7 +44,11 @@ public class ConsolServer {
             }catch (IOException e){
                 e.printStackTrace();
             }
-//            service.shutdown();
+
+            if (service != null) {
+                service.shutdownNow();
+            }
+
             AuthServise.disconnect();//отключаемся от БД
         }
     }
@@ -118,5 +117,7 @@ public class ConsolServer {
         }
     }
 
-
+    public ExecutorService getService() {
+        return service;
+    }
 }

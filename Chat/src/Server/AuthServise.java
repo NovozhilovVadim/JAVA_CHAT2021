@@ -1,10 +1,16 @@
 package Server;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.*;
+import java.util.Vector;
 
 public class AuthServise {//Сервис авторизации пользователей
     private static Connection connection;//создаём сессию (подключение) к базе данных
     private static Statement statement;//
+    private static String query = "SELECT nickname FROM users";
     private static PreparedStatement ps;
+
+
     //    Объект, используемый для выполнения статического оператора SQL и возврата полученных результатов.
     //    По умолчанию одновременно может быть открыт только один объект ResultSet для каждого объекта Statement.
     //    Следовательно, если чтение одного объекта ResultSet чередуется с чтением другого,
@@ -39,6 +45,9 @@ public class AuthServise {//Сервис авторизации пользова
              // Наборы результатов, созданные с использованием возвращенного объекта Statement,
              // по умолчанию будут иметь тип TYPE_FORWARD_ONLY и иметь уровень параллелизма CONCUR_READ_ONLY.
              // Удерживаемость созданных наборов результатов может быть определена путем вызова
+            ps = connection.prepareStatement(query);
+
+
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
@@ -69,8 +78,7 @@ public class AuthServise {//Сервис авторизации пользова
     public static int addUser(String login, String pass, String nickname) {
         try {
 
-            String query = "INSERT INTO users (login, password, nickname) VALUES (?, ?, ?);";
-//            PreparedStatement ps = connection.prepareStatement(query);
+            query = "INSERT INTO users (login, password, nickname) VALUES (?, ?, ?);";
             ps.setString(1, login);
             ps.setInt(2, pass.hashCode());
             ps.setString(3, nickname);
@@ -82,8 +90,7 @@ public class AuthServise {//Сервис авторизации пользова
     }
     public static int changeNick(String oldNick, String newNick) throws SQLException {
        try {
-           String query = "UPDATE users SET nickname = ?  WHERE nickname = ? ";
-           PreparedStatement ps = connection.prepareStatement(query);
+           query = "UPDATE users SET nickname = ?  WHERE nickname = ? ";
            ps.setString(1, newNick);
            ps.setString(2, oldNick);
            return ps.executeUpdate();
@@ -96,7 +103,7 @@ public class AuthServise {//Сервис авторизации пользова
 
 
     public static String getNicknameByLoginAndPass(String login, String pass) {
-        String query = String.format("select nickname, password from users where login='%s'", login);
+        query = String.format("select nickname, password from users where login='%s'", login);
         try {
             ResultSet rs = statement.executeQuery(query); // возвращает выборку через select
             int myHash = pass.hashCode();
